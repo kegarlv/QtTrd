@@ -1,0 +1,4 @@
+cmake-build-debug
+*.user*
+*.autosave
+3rd/
