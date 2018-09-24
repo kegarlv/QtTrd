@@ -7,7 +7,7 @@ before_install:
 
 install:
  - sudo apt-get install -qq qt57base qt57multimedia qt57script
- - source /opt/qt54/bin/qt57-env.sh
+ - source /opt/qt57/bin/qt57-env.sh
 
 
 script: cmake . -DCMAKE_BUILD_TYPE=Release && make
