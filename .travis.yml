@@ -18,9 +18,10 @@ install:
  - source /opt/qt57/bin/qt57-env.sh
 
 before_script:
+  - mkdir output
   - mkdir build
   - cd build
-  - cmake ../ -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX= $HOME/output || cat /home/travis/build/kegarlv/QtTrd/CMakeFiles/CMakeOutput.log
+  - cmake ../ -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/output || cat /home/travis/build/kegarlv/QtTrd/CMakeFiles/CMakeOutput.log
 
 script: make
 
