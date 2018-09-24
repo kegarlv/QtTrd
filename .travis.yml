@@ -10,7 +10,7 @@ before_install:
 - sudo apt-get install -qq g++-6 qt57-meta-full
 
 # Before build :
-QT_ENV_SCRIPT=$(find /opt -name 'qt*-env.sh')
-source $QT_ENV_SCRIPT
+- QT_ENV_SCRIPT=$(find /opt -name 'qt*-env.sh')
+- source $QT_ENV_SCRIPT
 
 script: cmake . -DCMAKE_BUILD_TYPE=Release && make
