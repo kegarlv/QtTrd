@@ -1,17 +1,13 @@
 language: cpp
 before_install:
-# For gcc-6
-- sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 1397BC53640DB551
-- sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
-
 # For Qt 5.7
 - sudo add-apt-repository --yes ppa:beineri/opt-qt571-trusty
 
-- sudo apt-get install -qq g++-6 qt57-meta-full
+- sudo apt-get update -qq
 
-# Before build :
-- QT_ENV_SCRIPT=$(find /opt -name 'qt*-env.sh')
-- source /opt/qt57/bin/qt57-env.sh
-- source QT_ENV_SCRIPT
+install:
+ - sudo apt-get install -qq qt57base qt57multimedia qt57script
+ - source /opt/qt54/bin/qt57-env.sh
+
 
 script: cmake . -DCMAKE_BUILD_TYPE=Release && make
