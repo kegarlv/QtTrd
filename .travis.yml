@@ -9,5 +9,7 @@ install:
  - sudo apt-get install -qq qt57base qt57multimedia qt57script
  - source /opt/qt57/bin/qt57-env.sh
 
+before_script:
+  - cmake . -DCMAKE_BUILD_TYPE=Release || cat /home/travis/build/kegarlv/QtTrd/CMakeFiles/CMakeOutput.log
 
-script: cmake . -DCMAKE_BUILD_TYPE=Release && make
+script: make
