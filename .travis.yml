@@ -5,6 +5,14 @@ before_install:
 
 - sudo apt-get update -qq
 
+# For CMake
+
+- mkdir $HOME/usr
+- export PATH="$HOME/usr/bin:$PATH"
+- wget https://cmake.org/files/v3.12/cmake-3.12.2-Linux-x86_64.sh
+- chmod +x cmake-3.12.2-Linux-x86_64.sh
+- ./cmake-3.12.2-Linux-x86_64.sh --prefix=$HOME/usr --exclude-subdir --skip-license
+
 install:
  - sudo apt-get install -qq qt57base qt57multimedia qt57script
  - source /opt/qt57/bin/qt57-env.sh
