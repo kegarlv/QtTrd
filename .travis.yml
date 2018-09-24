@@ -18,6 +18,21 @@ install:
  - source /opt/qt57/bin/qt57-env.sh
 
 before_script:
-  - cmake . -DCMAKE_BUILD_TYPE=Release || cat /home/travis/build/kegarlv/QtTrd/CMakeFiles/CMakeOutput.log
+  - mkdir build
+  - cd build
+  - cmake ../ -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX= $HOME/output || cat /home/travis/build/kegarlv/QtTrd/CMakeFiles/CMakeOutput.log
 
 script: make
+
+before_deploy:
+  - cd $HOME
+  - tar cvfz output.tgz output/
+
+deploy:
+  provider: releases
+  user: $DEPLOY_USERNAME
+  password: $DEPLOY_PASSWORD
+  file: $HOME/output.tgz
+  skip_cleanup: true
+  on:
+    branch: travis_test
