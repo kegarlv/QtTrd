@@ -35,4 +35,4 @@ deploy:
   file: $HOME/output.tgz
   skip_cleanup: true
   on:
-    branch: travis_test
+    branch: test_travis
