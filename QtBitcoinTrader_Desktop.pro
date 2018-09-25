@@ -50,7 +50,17 @@ win32 {
 TARGET = QtBitcoinTrader
 }
 
+
 mac {
+
+INCLUDEPATH += /usr/local/opt/openssl/include/openssl \
+              /usr/local/opt/openssl/include/ \
+              /usr/local/
+
+LIBS += -L/usr/local/lib/ \
+        -L/usr/local/opt/openssl/lib/ \
+        -lssl
+
     LIBS += -dead_strip
     LIBS += -framework CoreFoundation
     LIBS += -framework ApplicationServices
@@ -111,6 +121,7 @@ HEADERS += $${PWD}/script/addrulegroup.h \
           $${PWD}/depthitem.h \
           $${PWD}/depthmodel.h \
           $${PWD}/exchange/exchange.h \
+          $${PWD}/exchange/CustomExchange.h \
           $${PWD}/exchange/exchange_bitfinex.h \
           $${PWD}/exchange/exchange_bitstamp.h \
           $${PWD}/exchange/exchange_btcchina.h \
@@ -228,6 +239,7 @@ SOURCES +=$${PWD}/script/addrulegroup.cpp \
           $${PWD}/depthitem.cpp \
           $${PWD}/depthmodel.cpp \
           $${PWD}/exchange/exchange.cpp \
+          $${PWD}/exchange/CustomExchange.cpp \
           $${PWD}/exchange/exchange_bitfinex.cpp \
           $${PWD}/exchange/exchange_bitstamp.cpp \
           $${PWD}/exchange/exchange_btcchina.cpp \
