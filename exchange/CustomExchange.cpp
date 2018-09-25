@@ -463,8 +463,8 @@ void CustomExchange::buy(QString symbol, double apiBtcToBuy, double apiPriceToBu
     QByteArray payload = "type:\'BUY\', pair:\'" +
             pairItem.currRequestPair.toUpper() +
             "\', amount:\'" +
-            JulyMath::byteArrayFromDouble(apiBtcToBuy, 8, 0) + "\', rate:1";
 
+            JulyMath::byteArrayFromDouble(apiBtcToBuy, 8, 0) + "\', rate:\'" + JulyMath::byteArrayFromDouble(apiPriceToBuy, 8, 0) + "\'" ;
     QByteArray data = "pair:'" + pairItem.currRequestPair.toUpper() + "',price:'" + JulyMath::byteArrayFromDouble(apiPriceToBuy,
                                                                                                                   pairItem.priceDecimals, 0) + "',amount:'" + JulyMath::byteArrayFromDouble(apiBtcToBuy, pairItem.currADecimals, 0) + "'";
 
@@ -484,7 +484,7 @@ void CustomExchange::sell(QString symbol, double apiBtcToSell, double apiPriceTo
     if (pairItem.symbol.isEmpty())
         return;
 
-    QByteArray payload = "type:\'SELL\', pair:\'" + pairItem.currRequestPair.toUpper() +"\', amount:\'" + JulyMath::byteArrayFromDouble(apiBtcToSell, 8, 0) + "\', rate:1";
+    QByteArray payload = "type:\'SELL\', pair:\'" + pairItem.currRequestPair.toUpper() +"\', amount:\'" + JulyMath::byteArrayFromDouble(apiBtcToSell, 8, 0) + "\', rate:\'" + JulyMath::byteArrayFromDouble(apiPriceToSell, 8, 0) + "\'" ;
 
     if (debugLevel)
         logThread->writeLog("Sell: " + payload, 2);
