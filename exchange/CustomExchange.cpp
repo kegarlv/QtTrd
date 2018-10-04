@@ -26,7 +26,7 @@ void CustomExchange::secondSlot() {
     {
         case 0:
             if (!isReplayPending(103))
-                sendToApi(103, "ticker", false, true);
+                sendToApi(103, "grafic_public?pair=" + baseValues.currentPair.currRequestPair + "&interval=1D&order=ASC&count=100", false, true);
 
             break;
             //TODO
@@ -73,56 +73,6 @@ void CustomExchange::secondSlot() {
         sendCounter = 0;
 
     Exchange::secondSlot();
-
-//    //todo replay pendid
-//    switch (sendCounter)
-//    {
-//        case 0:
-//            //basic info about selected ticker
-//                julyHttp->sendData(103, "GET /api2/ticker/");
-//            break;
-//
-//        case 1:
-//            //My balance
-////            if (!isReplayPending(202))
-////                sendToApi(202, "", true, true, "method=getInfo&");
-////
-////            break;
-//
-//        case 2:
-//            //trade history for a pair
-//            julyHttp->sendData(109, "GET /api2/trades?pair=" +  baseValues.currentPair.currRequestPair);
-//            break;
-//
-//        case 3:
-//            //open orders for account
-////            if (!tickerOnly && !isReplayPending(204))
-////                sendToApi(204, "", true, true, "method=ActiveOrders&pair=" + baseValues.currentPair.currRequestPair + "&");
-////
-////            break;
-//
-//        case 4:
-//            //orderbook?
-////            if (isDepthEnabled() && (forceDepthLoad || !isReplayPending(111)))
-////            {
-////                emit depthRequested();
-////                sendToApi(111, "depth/" + baseValues.currentPair.currRequestPair + "?limit=" + baseValues.depthCountLimitStr, false,
-////                          true);
-////                forceDepthLoad = false;
-////            }
-////
-////            break;
-//
-//        case 5:
-//            if (lastHistory.isEmpty())
-//                getHistory(false);
-//
-//            break;
-//
-//        default:
-//            break;
-//    }
-
 }
 
 void CustomExchange::dataReceivedAuth(QByteArray data, int i) {
@@ -141,28 +91,28 @@ void CustomExchange::dataReceivedAuth(QByteArray data, int i) {
         case 103:
             qDebug() << "request #103 ticker";
             {
-                QJsonArray root = QJsonDocument::fromJson(data).array();
-                for (auto ticker : root) {
-                    if (ticker.toObject().value("market_name").toString() == baseValues.currentPair.currRequestPair) {
-                        auto tickerObject = ticker.toObject();
-                        double newTickerHigh = tickerObject.value("ask").toString().toDouble();
-                        double newTickerLow = tickerObject.value("bid").toString().toDouble();
-                        double newTickerLast = tickerObject.value("last").toString().toDouble();
-                        double newTickerVolume = tickerObject.value("vol").toString().toDouble();
-                        IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "High",
-                                                  newTickerHigh);
-                        IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "Low",
-                                                  newTickerLow);
-                        IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "Sell",
-                                                  newTickerHigh);
-                        IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "Buy",
-                                                  newTickerLow);
-                        IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "Volume",
-                                                  newTickerVolume);
-                        IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "Last",
-                                                  newTickerLast);
-                    }
-                }
+                QJsonObject rootObj = QJsonDocument::fromJson(data).object();
+
+                QJsonArray graphArray = rootObj.value("data").toObject().value("graf").toArray();
+                QJsonObject graphValue = graphArray.last().toObject();
+
+                double newTickerHigh = graphValue.value("high").toString().toDouble();
+                double newTickerLow = graphValue.value("low").toString().toDouble();
+//                double newTickerLast = graphValue.value("last").toString().toDouble();
+                double newTickerVolume = graphValue.value("volume").toString().toDouble();
+
+                IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "High",
+                                          newTickerHigh);
+                IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "Low",
+                                          newTickerLow);
+//                IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "Sell",
+//                                          newTickerHigh);
+//                IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "Buy",
+//                                          newTickerLow);
+                IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "Volume",
+                                          newTickerVolume);
+//                IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "Last",
+//                                          newTickerLast);
             }
             break;
         case 109: {
