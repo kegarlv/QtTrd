@@ -49,6 +49,7 @@ private:
     QList<DepthItem> *depthAsks, *depthBids;
     QMap<double,double> lastDepthAsksMap;
     QMap<double,double> lastDepthBidsMap;
+    QList<TradesItem> m_tradesCache;
 
 };
 

@@ -172,7 +172,12 @@ void CustomExchange::dataReceivedAuth(QByteArray data, int i) {
                                 ->toVariant();
         IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "Last",
                                   lastItem.toMap().value("price").toString().toDouble());
-        emit this->addLastTrades(baseValues.currentPair.symbol, list);
+
+        QList<TradesItem> diff = list->toSet().subtract(m_tradesCache.toSet()).toList();
+        m_tradesCache.append(diff);
+        if(diff.size()) {
+            emit this->addLastTrades(baseValues.currentPair.symbol, new QList<TradesItem>(diff));
+        }
         qDebug() << "Parser" << list->size() << "TradesItem";
     } break;
         // TODO
@@ -424,6 +429,8 @@ void CustomExchange::reloadDepth() {
 void CustomExchange::clearValues() {
     if (julyHttp)
         julyHttp->clearPendingData();
+
+    m_tradesCache.clear();
 }
 
 void CustomExchange::getHistory(bool force) {
