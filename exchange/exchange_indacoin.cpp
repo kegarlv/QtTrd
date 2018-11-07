@@ -219,7 +219,7 @@ void Exchange_Indacoin::dataReceivedAuth(QByteArray data, int reqType)
 
                     lastFetchTid = currentTid;
 
-                    newItem.date = getMidData("date\":", "}", &tradeData).toUInt();
+                    newItem.date = getMidData("date\":", "}", &tradeData).toLongLong();
 
                     if (newItem.date > lastFetchDate)
                         lastFetchDate = newItem.date;
@@ -496,6 +496,8 @@ void Exchange_Indacoin::dataReceivedAuth(QByteArray data, int reqType)
 
                 break;//orders
             }
+
+            break;
 
         case 305: //order/cancel
             if (!success)

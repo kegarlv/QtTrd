@@ -40,7 +40,7 @@ struct TradesItem
     bool backGray;
 
     bool displayFullDate;
-    quint32 date;
+    qint64 date;
     QString dateStr;
     QString timeStr;
 

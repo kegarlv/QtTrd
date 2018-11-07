@@ -37,7 +37,7 @@
 struct OrderItem
 {
     QByteArray oid;
-    quint32 date;
+    qint64 date;
     QString dateStr;
     bool type;//true=Ask, false=Bid
     int status;//0=Canceled, 1=Open, 2=Pending, 3=Post-Pending

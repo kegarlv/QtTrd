@@ -89,7 +89,7 @@ PasswordDialog::PasswordDialog(QWidget* parent)
         if (scriptsOldPlace.count())
             iniNames << QFileInfo(settingsList.at(n)).completeBaseName();
 
-        QSettings settIni(appDataDir + settingsList.at(n), QSettings::IniFormat);
+        QSettings settIni(appDataDir + "/" + settingsList.at(n), QSettings::IniFormat);
 
         if (baseValues.appVerLastReal < 1.0772)
         {
@@ -119,7 +119,7 @@ PasswordDialog::PasswordDialog(QWidget* parent)
 
         if (settIni.value("EncryptedData/ApiKeySign", "").toString().isEmpty())
         {
-            QFile::remove(appDataDir + settingsList.at(n));
+            QFile::remove(appDataDir + "/" + settingsList.at(n));
             continue;
         }
 
@@ -129,7 +129,7 @@ PasswordDialog::PasswordDialog(QWidget* parent)
         {
             if (currentProfileExchangeId == 2)
             {
-                QFile::remove(appDataDir + settingsList.at(n));
+                QFile::remove(appDataDir + "/" + settingsList.at(n));
                 static bool haveBitstampProfile = false;
 
                 if (!haveBitstampProfile)
@@ -193,13 +193,13 @@ PasswordDialog::PasswordDialog(QWidget* parent)
 
     QLayout* groupboxLayout = ui.LogoGroupBox->layout();
 
-    if (groupboxLayout == 0)
+    if (groupboxLayout == nullptr)
     {
         groupboxLayout = new QGridLayout;
         groupboxLayout->setContentsMargins(0, 0, 0, 0);
         groupboxLayout->setSpacing(0);
         ui.LogoGroupBox->setLayout(groupboxLayout);
-        LogoButton* logoButton = new LogoButton;
+        LogoButton* logoButton = new LogoButton(true);
         groupboxLayout->addWidget(logoButton);
     }
 
@@ -254,9 +254,9 @@ QString PasswordDialog::getIniFilePath()
     int currIndex = ui.profileComboBox->currentIndex();
 
     if (currIndex == -1)
-        return appDataDir + "QtBitcoinTrader.ini";
+        return appDataDir + "/QtBitcoinTrader.ini";
 
-    return appDataDir + ui.profileComboBox->itemData(currIndex).toString();
+    return appDataDir + "/" + ui.profileComboBox->itemData(currIndex).toString();
 }
 
 void PasswordDialog::addNewProfile()

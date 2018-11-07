@@ -428,6 +428,7 @@ signals:
     void clearCharts();
     void addBound(double, bool);
 private slots:
+    void uninstall();
     void on_buttonAddScript_clicked();
     void on_helpButton_clicked();
     void depthVisibilityChanged(bool);
@@ -446,6 +447,7 @@ private:
     QScopedPointer<QThread> currentExchangeThread;
 
 private slots:
+    void onActionSendBugReport();
     void onActionAbout();
     void onActionAboutQt();
     void onActionLockDocks(bool checked);
@@ -460,12 +462,14 @@ private slots:
 private:
     bool         lockedDocks;
     QAction*     actionExit;
+    QAction*     actionSendBugReport;
     QAction*     actionAbout;
     QAction*     actionAboutQt;
     QAction*     actionLockDocks;
     QAction*     actionConfigManager;
     QAction*     actionSettings;
     QAction*     actionDebug;
+    QAction*     actionUninstall;
     QMenu*       menuFile;
     QMenu*       menuView;
     QMenu*       menuConfig;
