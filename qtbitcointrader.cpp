@@ -64,6 +64,7 @@
 #include "exchange/exchange_yobit.h"
 #include "exchange/exchange_binance.h"
 #include "exchange/exchange_bittrex.h"
+#include "exchange/CustomExchange.h"
 #include <QSystemTrayIcon>
 #include <QtCore/qmath.h>
 #include "script/addrulegroup.h"
@@ -676,54 +677,60 @@ void QtBitcoinTrader::setupClass()
 
     switch (exchangeId)
     {
-        case 0:
-            QCoreApplication::quit();
-            return;
-            break;//Secret Excange
+    case 0:
+        QCoreApplication::quit();
+        return;//Secret Excange
 
-        case 1:
-            currentExchange = new Exchange_WEX(baseValues.restSign, baseValues.restKey);
-            break;//WEX
+    case 1:
+        currentExchange = new Exchange_WEX(baseValues.restSign, baseValues.restKey);
+        break;//WEX
 
-        case 2:
-            currentExchange = new Exchange_Bitstamp(baseValues.restSign, baseValues.restKey);
-            break;//Bitstamp
+    case 2:
+        currentExchange = new Exchange_Bitstamp(baseValues.restSign, baseValues.restKey);
+        break;//Bitstamp
 
-        case 3:
-            currentExchange = new Exchange_BTCChina(baseValues.restSign, baseValues.restKey);
-            break;//BTC China
+    case 3:
+        currentExchange = new Exchange_BTCChina(baseValues.restSign, baseValues.restKey);
+        break;//BTC China
 
-        case 4:
-            currentExchange = new Exchange_Bitfinex(baseValues.restSign, baseValues.restKey);
-            break;//Bitfinex
+    case 4:
+        currentExchange = new Exchange_Bitfinex(baseValues.restSign, baseValues.restKey);
+        break;//Bitfinex
 
-        case 5:
-            currentExchange = new Exchange_GOCio(baseValues.restSign, baseValues.restKey);
-            break;//GOCio
+    case 5:
+        currentExchange = new Exchange_GOCio(baseValues.restSign, baseValues.restKey);
+        break;//GOCio
 
-        case 6:
-            currentExchange = new Exchange_Indacoin(baseValues.restSign, baseValues.restKey);
-            break;//Indacoin
+    case 6:
+        currentExchange = new Exchange_Indacoin(baseValues.restSign, baseValues.restKey);
+        break;//Indacoin
 
-        case 8:
-            currentExchange = new Exchange_BitMarket(baseValues.restSign, baseValues.restKey);
-            break;//BitMarket
+    case 8:
+        currentExchange = new Exchange_BitMarket(baseValues.restSign, baseValues.restKey);
+        break;//BitMarket
 
-        case 9:
-            currentExchange = new Exchange_OKCoin(baseValues.restSign, baseValues.restKey);
-            break;//OKCoin
+    case 9:
+        currentExchange = new Exchange_OKCoin(baseValues.restSign, baseValues.restKey);
+        break;//OKCoin
 
-        case 10:
-            currentExchange = new Exchange_YObit(baseValues.restSign, baseValues.restKey);
-            break;//YObit
+    case 10:
+        currentExchange = new Exchange_YObit(baseValues.restSign, baseValues.restKey);
+        break;//YObit
 
-        //TODO add exchange here
-       case 11:
-            currentExchange = new CustomExchange(baseValues.restSign, baseValues.restKey);
-            break;
+    case 11:
+        currentExchange = new Exchange_Binance(baseValues.restSign, baseValues.restKey);
+        break;//Binance
 
-        default:
-            return;
+    case 12:
+        currentExchange = new Exchange_Bittrex(baseValues.restSign, baseValues.restKey);
+        break;//Bittrex
+
+    case 13:
+        currentExchange = new CustomExchange(baseValues.restSign, baseValues.restKey);
+        break; // Stex
+
+    default:
+        return;
     }
 
     currentExchangeThread.reset(new QThread);
