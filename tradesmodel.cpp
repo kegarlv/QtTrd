@@ -513,6 +513,10 @@ void TradesModel::addNewTrades(QList<TradesItem>* newItems)
         backSwitcher = !backSwitcher;
     }
 
+    verifedItems.erase(std::remove_if(verifedItems.begin(), verifedItems.end(), [this](const TradesItem &tradeItem) {
+        return this->itemsList.contains(tradeItem);
+    }), verifedItems.end());
+
     if (verifedItems.count() > 0)
     {
         verifedItems[verifedItems.count() - 1].displayFullDate = true;

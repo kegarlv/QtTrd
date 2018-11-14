@@ -62,6 +62,9 @@ struct TradesItem
     void cacheStrings();
 
     bool isValid();
+
+    bool operator==(const TradesItem &other) const;
 };
+
 
 #endif // TRADESITEM_H
