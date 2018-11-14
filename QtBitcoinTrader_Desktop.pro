@@ -114,7 +114,7 @@ HEADERS += $${PWD}/script/addrulegroup.h \
            $${PWD}/exchange/exchange_yobit.h \
            $${PWD}/exchange/exchange_binance.h \
            $${PWD}/exchange/exchange_bittrex.h \
-           $${PWD}/exchange/CustomExchange.h \
+           $${PWD}/exchange/StexExchange.h \
            $${PWD}/feecalculator.h \
            $${PWD}/historyitem.h \
            $${PWD}/historymodel.h \
@@ -235,7 +235,7 @@ SOURCES +=$${PWD}/script/addrulegroup.cpp \
           $${PWD}/exchange/exchange_yobit.cpp \
           $${PWD}/exchange/exchange_binance.cpp \
           $${PWD}/exchange/exchange_bittrex.cpp \
-          $${PWD}/exchange/CustomExchange.cpp \
+          $${PWD}/exchange/StexExchange.cpp \
           $${PWD}/feecalculator.cpp \
           $${PWD}/historyitem.cpp \
           $${PWD}/historymodel.cpp \
