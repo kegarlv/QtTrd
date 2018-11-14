@@ -38,7 +38,7 @@
 #include "iniengine.h"
 
 Exchange::Exchange()
-    : QObject(nullptr)
+    : QObject()
 {
     multiCurrencyTradeSupport = false;
     exchangeDisplayOnlyCurrentPairOpenOrders = false;
@@ -191,7 +191,7 @@ void Exchange::setupApi(QtBitcoinTrader* mainClass, bool tickOnly)//Execute only
 
     if (!tickerOnly)
     {
-        Exchange::connect(mainClass, SIGNAL(apiBuy(QString, double, double)), this, SLOT(buy(QString, double, double)));
+        connect(mainClass, SIGNAL(apiBuy(QString, double, double)), this, SLOT(buy(QString, double, double)));
         connect(mainClass, SIGNAL(apiSell(QString, double, double)), this, SLOT(sell(QString, double, double)));
         connect(mainClass, SIGNAL(cancelOrderByOid(QString, QByteArray)), this, SLOT(cancelOrder(QString, QByteArray)));
         connect(mainClass, SIGNAL(getHistory(bool)), this, SLOT(getHistory(bool)));

@@ -46,7 +46,6 @@
     #include <net/if.h>
 #endif
 
-
 JulyHttp::JulyHttp(const QString& hostN, const QByteArray& restLine, QObject* parent, const bool& secure,
                    const bool& keepAlive, const QByteArray& contentType)
     : QSslSocket(parent),
@@ -56,7 +55,6 @@ JulyHttp::JulyHttp(const QString& hostN, const QByteArray& restLine, QObject* pa
     noReconnect = false;
     forcedPort = 0U;
     noReconnectCount = 0;
-    noReconnect = false;
     secureConnection = secure;
     isDataPending = false;
     httpState = 999;
@@ -76,10 +74,10 @@ JulyHttp::JulyHttp(const QString& hostN, const QByteArray& restLine, QObject* pa
     hostName = hostN;
     httpHeader.append(" HTTP/1.1\r\n");
 
-//    if (baseValues.customUserAgent.length() > 0)
-//        httpHeader.append("User-Agent: " + baseValues.customUserAgent + "\r\n");
-//    else
-//        httpHeader.append("User-Agent: Qt Bitcoin Trader v" + baseValues.appVerStr + "\r\n");
+    if (baseValues.customUserAgent.length() > 0)
+        httpHeader.append("User-Agent: " + baseValues.customUserAgent + "\r\n");
+    else
+        httpHeader.append("User-Agent: Qt Bitcoin Trader v" + baseValues.appVerStr + "\r\n");
 
     httpHeader.append("Host: " + hostName + "\r\n");
     httpHeader.append("Accept: */*\r\n");
@@ -181,12 +179,12 @@ void JulyHttp::clearPendingData()
     reConnect();
 }
 
-void JulyHttp::reConnect(bool mastAbort)
+void JulyHttp::reConnect(bool forceAbort)
 {
     if (isDisabled)
         return;
 
-    reconnectSocket(mastAbort);
+    reconnectSocket(forceAbort);
 }
 
 void JulyHttp::abortSocket()
@@ -196,7 +194,7 @@ void JulyHttp::abortSocket()
     blockSignals(false);
 }
 
-void JulyHttp::reconnectSocket(bool mastAbort)
+void JulyHttp::reconnectSocket(bool forceAbort)
 {
     if (destroyClass)
         return;//{qDebug("delete reconnectSocket1"); delete this; qDebug("delete reconnectSocket2");}
@@ -204,7 +202,7 @@ void JulyHttp::reconnectSocket(bool mastAbort)
     if (isDisabled)
         return;
 
-    if (mastAbort)
+    if (forceAbort)
         abortSocket();
 
     if (state() == QAbstractSocket::UnconnectedState)
@@ -402,7 +400,7 @@ void JulyHttp::readSocket()
 
     addSpeedSize(readSize);
 
-    QByteArray* dataArray = 0;
+    QScopedPointer<QByteArray> dataArray;
 
     if (chunkedSize != -1)
     {
@@ -426,12 +424,6 @@ void JulyHttp::readSocket()
                 {
                     if (debugLevel)
                         logThread->writeLog("Invalid size", 2);
-
-                    if (dataArray)
-                    {
-                        delete dataArray;
-                        dataArray = 0;
-                    }
 
                     retryRequest();
                     return;
@@ -472,7 +464,7 @@ void JulyHttp::readSocket()
             qint64 bytesToRead = chunkedSize < 0 ? readSize : qMin(readSize, chunkedSize);
 
             if (!dataArray)
-                dataArray = new QByteArray;
+                dataArray.reset(new QByteArray);
 
             quint32 oldDataSize = dataArray->size();
             dataArray->resize(oldDataSize + bytesToRead);
@@ -491,12 +483,6 @@ void JulyHttp::readSocket()
                     if (debugLevel)
                         logThread->writeLog("Invalid HTTP chunked body", 2);
 
-                    if (dataArray)
-                    {
-                        delete dataArray;
-                        dataArray = 0;
-                    }
-
                     retryRequest();
                     return;
                 }
@@ -509,13 +495,7 @@ void JulyHttp::readSocket()
 
         if (readSize > 0)
         {
-            if (dataArray)
-            {
-                delete dataArray;
-                dataArray = 0;
-            }
-
-            dataArray = new QByteArray;
+            dataArray.reset(new QByteArray);
             dataArray->resize(readSize);
             dataArray->resize(read(dataArray->data(), readSize));
         }
@@ -526,7 +506,7 @@ void JulyHttp::readSocket()
     else if (readSize > 0)
     {
         if (!dataArray)
-            dataArray = new QByteArray(readAll());
+            dataArray.reset(new QByteArray(readAll()));
     }
 
     if (dataArray)
@@ -536,11 +516,7 @@ void JulyHttp::readSocket()
         if (readSize > 0)
             buffer.append(*dataArray);
 
-        if (dataArray)
-        {
-            delete dataArray;
-            dataArray = 0;
-        }
+        dataArray.reset();
 
         if (contentLength > 0)
         {
@@ -549,11 +525,7 @@ void JulyHttp::readSocket()
         }
     }
 
-    if (dataArray)
-    {
-        delete dataArray;
-        dataArray = 0;
-    }
+    dataArray.reset();
 
     if (allDataReaded)
     {
@@ -629,14 +601,14 @@ void JulyHttp::gzipUncompress(QByteArray* data)
 
         switch (ret)
         {
-            case Z_NEED_DICT:
-                ret = Z_DATA_ERROR;
-                break;
+        case Z_NEED_DICT:
+            ret = Z_DATA_ERROR;
+            break;
 
-            case Z_DATA_ERROR:
-            case Z_MEM_ERROR:
-                (void)inflateEnd(&strm);
-                return;
+        case Z_DATA_ERROR:
+        case Z_MEM_ERROR:
+            (void)inflateEnd(&strm);
+            return;
         }
 
         result.append(out, CHUNK_SIZE - strm.avail_out);
@@ -674,7 +646,7 @@ void JulyHttp::clearRequest()
 {
     buffer.clear();
     chunkedSize = -1;
-    nextPacketMastBeSize = false;
+    nextPacketMustBeSize = false;
     endOfPacket = false;
 }
 
@@ -695,8 +667,6 @@ void JulyHttp::prepareData(int reqType, const QByteArray& method, QByteArray pos
         data->append("Content-Length: " + QByteArray::number(postData.size()) + "\r\n\r\n");
         data->append(postData);
     }
-    else
-        data->append("\r\n");
 
     PacketItem newPacket;
     newPacket.data = data;
@@ -779,8 +749,6 @@ void JulyHttp::sendData(int reqType, const QByteArray& method, QByteArray postDa
     }
     else
         data->append("\r\n");
-
-    qDebug() << *data;
 
     if (reqType > 300)
         for (int n = requestList.count() - 1; n >= 1; n--)
@@ -866,7 +834,7 @@ void JulyHttp::errorSlot(QAbstractSocket::SocketError socketError)
         setApiDown(true);
 
     if (debugLevel)
-        logThread->writeLog("SocketError: " + errorString().toLatin1(), 2);
+        logThread->writeLog("SocketError: " + errorString().toUtf8(), 2);
 
     if (socketError == QAbstractSocket::ProxyAuthenticationRequiredError)
     {
@@ -917,7 +885,7 @@ void JulyHttp::sendPendingData()
             setApiDown(true);
 
             if (debugLevel)
-                logThread->writeLog("Socket state: " + errorString().toLatin1(), 2);
+                logThread->writeLog("Socket state: " + errorString().toUtf8(), 2);
 
             reconnectSocket(false);
 
@@ -998,4 +966,34 @@ void JulyHttp::addSpeedSize(qint64 size)
 void JulyHttp::sslErrorsSlot(const QList<QSslError>& val)
 {
     emit sslErrorSignal(val);
+}
+
+bool JulyHttp::requestWait(const QUrl& url, QByteArray& result, QString* errorString)
+{
+    if (errorString)
+        errorString->clear();
+
+    QNetworkAccessManager mng;
+
+    QNetworkRequest request(url);
+    request.setRawHeader("Accept", "*/*");
+    request.setRawHeader("Accept-Language", "en");
+    request.setHeader(QNetworkRequest::UserAgentHeader, QCoreApplication::applicationName());
+
+    QNetworkReply* reply = mng.get(request);
+
+    if (reply == nullptr)
+        return false;
+
+    QEventLoop loop;
+    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+    result = reply->readAll();
+
+    if (result.isEmpty() && errorString)
+        *errorString = reply->errorString();
+
+    reply->deleteLater();
+
+    return !result.isEmpty();
 }

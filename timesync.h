@@ -46,7 +46,7 @@ public:
     TimeSync();
     ~TimeSync();
     static TimeSync* global();
-    static quint32 getTimeT();
+    static qint64 getTimeT();
     static void syncNow();
 
 signals:
@@ -56,13 +56,13 @@ signals:
 private slots:
     void runThread();
     void getNTPTime();
-
+    void quitThread();
 private:
-    QThread* dateUpdateThread;
-    QAtomicInt started;
-    quint32 startTime;
-    QAtomicInt timeShift;
-    QElapsedTimer* additionalTimer;
+    QScopedPointer<QThread> dateUpdateThread;
+    std::atomic<qint64> started;
+    qint64 startTime;
+    std::atomic<qint64> timeShift;
+    QScopedPointer<QElapsedTimer> additionalTimer;
     QMutex mutex;
     int getNTPTimeRetryCount;
 };

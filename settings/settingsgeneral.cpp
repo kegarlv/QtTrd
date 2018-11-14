@@ -49,7 +49,7 @@ SettingsGeneral::SettingsGeneral()
 
     ui.revertChangesButton->setEnabled(false);
     ui.saveButton->setEnabled(false);
-    ui.forceSyncPairsButton->setEnabled(QDir(appDataDir + "cache").entryList(QStringList("*.cache"), QDir::Files).count() != 0);
+    ui.forceSyncPairsButton->setEnabled(QDir(appDataDir + "/cache").entryList(QStringList("*.cache"), QDir::Files).count() != 0);
 
 #ifdef Q_OS_MAC
     ui.closeToTrayLabel->setVisible(false);
@@ -75,11 +75,11 @@ void SettingsGeneral::loadLanguage()
         if (!resourceLanguages.at(n).isEmpty())
             langList << ":/Resources/Language/" + resourceLanguages.at(n);
 
-    QStringList folderLangList = QDir(appDataDir + "Language", "*.lng").entryList();
+    QStringList folderLangList = QDir(appDataDir + "/Language", "*.lng").entryList();
     folderLangList.sort();
 
     for (int n = 0; n < folderLangList.count(); n++)
-        langList << appDataDir + "Language/" + folderLangList.at(n);
+        langList << appDataDir + "/Language/" + folderLangList.at(n);
 
     int selectedLangId = -1;
 
@@ -129,7 +129,7 @@ void SettingsGeneral::loadOther()
     ui.confirmOpenOrderCheckBox->setChecked(iniSettings->value("UI/ConfirmOpenOrder", true).toBool());
     ui.closeToTrayCheckBox->setChecked(iniSettings->value("UI/CloseToTray", false).toBool());
     ui.optimizeInterfaceCheckBox->setChecked(iniSettings->value("UI/OptimizeInterface", false).toBool());
-    ui.hiDpiCheckBox->setChecked(hiDpiSettings->value("HiDPI", true).toBool());
+    ui.hiDpiCheckBox->setChecked(hiDpiSettings->value("HiDPI", baseValues.defaultEnableHiDPI).toBool());
 }
 
 void SettingsGeneral::saveOther()
@@ -144,7 +144,12 @@ void SettingsGeneral::saveOther()
     baseValues.mainWindow_->closeToTray = ui.closeToTrayCheckBox->isChecked();
 
     iniSettings->setValue("UI/OptimizeInterface", ui.optimizeInterfaceCheckBox->isChecked());
-    hiDpiSettings->setValue("HiDPI", ui.hiDpiCheckBox->isChecked());
+
+    if (ui.hiDpiCheckBox->isChecked() != hiDpiSettings->value("HiDPI", baseValues.defaultEnableHiDPI).toBool())
+    {
+        hiDpiSettings->setValue("HiDPI", ui.hiDpiCheckBox->isChecked());
+        mainSettings->remove("RowHeight");
+    }
 }
 
 void SettingsGeneral::loadUpdates()
@@ -195,7 +200,7 @@ void SettingsGeneral::on_restoreDefaultsButton_clicked()
     ui.confirmOpenOrderCheckBox->setChecked(true);
     ui.closeToTrayCheckBox->setChecked(false);
     ui.optimizeInterfaceCheckBox->setChecked(false);
-    ui.hiDpiCheckBox->setChecked(true);
+    ui.hiDpiCheckBox->setChecked(baseValues.defaultEnableHiDPI);
     ui.checkForUpdatesCheckBox->setChecked(true);
     ui.checkForUpdatesBetaCheckBox->setChecked(false);
     ui.autoUpdateCheckBox->setChecked(false);
@@ -239,10 +244,10 @@ void SettingsGeneral::on_showTranslationButton_clicked()
 
 void SettingsGeneral::on_forceSyncPairsButton_clicked()
 {
-    QStringList cacheFiles = QDir(appDataDir + "cache").entryList(QStringList("*.cache"), QDir::Files);
+    QStringList cacheFiles = QDir(appDataDir + "/cache").entryList(QStringList("*.cache"), QDir::Files);
 
     for (int i = 0; i < cacheFiles.count(); ++i)
-        QFile(appDataDir + "cache/" + cacheFiles.at(i)).remove();
+        QFile(appDataDir + "/cache/" + cacheFiles.at(i)).remove();
 
     ui.forceSyncPairsButton->setEnabled(false);
 }

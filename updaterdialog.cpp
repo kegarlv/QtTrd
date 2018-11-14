@@ -38,6 +38,7 @@
 #include <QClipboard>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QProcess>
 #include <QFile>
 #include "logobutton.h"
 #include "julymath.h"
@@ -90,32 +91,30 @@ UpdaterDialog::UpdaterDialog(bool fbMess)
         {
             QLayout* groupboxLayout = groupBox->layout();
 
-            if (groupboxLayout == 0)
+            if (groupboxLayout == nullptr)
             {
                 groupboxLayout = new QGridLayout;
                 groupboxLayout->setContentsMargins(0, 0, 0, 0);
                 groupboxLayout->setSpacing(0);
                 groupBox->setLayout(groupboxLayout);
-                LogoButton* logoButton = new LogoButton;
+                LogoButton* logoButton = new LogoButton(true);
                 groupboxLayout->addWidget(logoButton);
             }
         }
     }
 
     if (updateCheckRetryCount > 3)
-        httpGet = new JulyHttp("api.qtbitcointrader.com", 0, this, false, false);
+        httpGet = new JulyHttp("api.qtbitcointrader.com", nullptr, this, false, false);
     else
-        httpGet = new JulyHttp("qbtapi.centrabit.com", 0, this, false, false);
+        httpGet = new JulyHttp("qbtapi.centrabit.com", nullptr, this, false, false);
 
     httpGet->noReconnect = true;
     timeOutTimer = new QTimer(this);
     connect(timeOutTimer, SIGNAL(timeout()), this, SLOT(exitSlot()));
     connect(httpGet, SIGNAL(dataReceived(QByteArray, int)), this, SLOT(dataReceived(QByteArray, int)));
 
-    QByteArray osString = "Linux";
-
 #ifdef Q_OS_WIN
-    osString = "Win";
+    QByteArray osString = "Win";
 
     if (QSysInfo::windowsVersion() >  QSysInfo::WV_XP)
     {
@@ -126,10 +125,20 @@ UpdaterDialog::UpdaterDialog(bool fbMess)
             osString = "Win64";
     }
 
-#endif
-
+#else
 #ifdef Q_OS_MAC
-    osString = "Mac";
+    QByteArray osString = "Mac";
+#else
+#ifdef Q_OS_LINUX
+#ifdef QTBUILDTARGETLINUX64
+    QByteArray osString = "Linux64";
+#else
+    QByteArray osString = "Linux";
+#endif
+#else
+    QByteArray osString = "Undefined";
+#endif
+#endif
 #endif
 
     QByteArray reqStr = "Beta=";
@@ -204,10 +213,20 @@ void UpdaterDialog::dataReceived(QByteArray dataReceived, int reqType)
 #ifdef Q_OS_WIN
         canAutoUpdate = true;
 #endif
+#ifdef QTBUILDTARGETLINUX64
+        canAutoUpdate = true;
+#endif
 
         if (reqType == 140)
         {
             QString os = "Src";
+#ifdef Q_OS_LINUX
+#ifdef QTBUILDTARGETLINUX64
+            os = "Linux64";
+#else
+            os = "Linux";
+#endif
+#endif
 #ifdef Q_OS_MAC
             os = "Mac";
 #endif
@@ -285,12 +304,11 @@ void UpdaterDialog::dataReceived(QByteArray dataReceived, int reqType)
                 }
             }
 
-            QString os = "Src";
 #ifdef Q_OS_MAC
-            os = "Mac";
-#endif
+            QString os = "Mac";
+#else
 #ifdef Q_OS_WIN
-            os = "Win32";
+            QString os = "Win32";
 
             if (QSysInfo::windowsVersion() >  QSysInfo::WV_XP)
             {
@@ -301,6 +319,17 @@ void UpdaterDialog::dataReceived(QByteArray dataReceived, int reqType)
                     os = "Win64";
             }
 
+#else
+#ifdef Q_OS_LINUX
+#ifdef QTBUILDTARGETLINUX64
+            QString os = "Linux64";
+#else
+            QString os = "Linux";
+#endif
+#else
+            QString os = "Src";
+#endif
+#endif
 #endif
             updateVersion = versionsMap.value(os + "Ver");
             updateSignature = versionsMap.value(os + "Signature").toLatin1();
@@ -406,9 +435,31 @@ void UpdaterDialog::dataReceived(QByteArray dataReceived, int reqType)
 
             if (QCryptographicHash::hash(fileData, QCryptographicHash::Sha1) != fileSha1)
             {
+                QFile::remove(updBin);
                 downloadErrorFile(3);
                 return;
             }
+
+#ifdef Q_OS_LINUX
+            QFile(updBin).setPermissions(QFile(curBin).permissions());
+            {
+                QProcess testProc;
+                testProc.setProcessChannelMode(QProcess::MergedChannels);
+                testProc.start(updBin, QStringList() << "/test");
+                testProc.waitForFinished(30000);
+                QByteArray testOut = testProc.readAll();
+
+                if (!testOut.contains("(-: OK :-)"))
+                {
+                    QFile::remove(updBin);
+                    QMessageBox::critical(this, windowTitle(),
+                                          "Looks like new version of app have dependency problems. Please download latest version from http://sourceforge.net/projects/bitcointrader and fix it manually\n\n"
+                                          + QString::fromUtf8(testOut));
+                    downloadErrorFile(11);
+                    return;
+                }
+            }
+#endif
 
             QFile::rename(curBin, bkpBin);
 
@@ -432,6 +483,9 @@ void UpdaterDialog::dataReceived(QByteArray dataReceived, int reqType)
 #ifdef Q_OS_MAC
             QFile(curBin).setPermissions(QFile(bkpBin).permissions());
 #endif
+#ifdef Q_OS_LINUX
+            QFile(curBin).setPermissions(QFile(bkpBin).permissions());
+#endif
 
             if (!autoUpdate)
                 QMessageBox::information(this, windowTitle(), julyTr("UPDATED_SUCCESSFULLY",
@@ -441,6 +495,8 @@ void UpdaterDialog::dataReceived(QByteArray dataReceived, int reqType)
             settings.setValue("UpdateCheckRetryCount", 0);
             exitSlot();
         }
+        else
+            downloadErrorFile(12);
     }
 }
 
@@ -481,7 +537,7 @@ void UpdaterDialog::buttonUpdate()
 
     updateLink.remove(0, removeLength);
 
-    httpGetFile = new JulyHttp(domain, 0, this, protocol.startsWith("https"), false);
+    httpGetFile = new JulyHttp(domain, nullptr, this, protocol.startsWith("https"), false);
     connect(httpGetFile, SIGNAL(apiDown(bool)), this, SLOT(invalidData(bool)));
     connect(httpGetFile, SIGNAL(dataProgress(int)), this, SLOT(dataProgress(int)));
     connect(httpGetFile, SIGNAL(dataReceived(QByteArray, int)), this, SLOT(dataReceived(QByteArray, int)));

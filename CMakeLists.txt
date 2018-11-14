@@ -132,7 +132,18 @@ set(QT_BTC_SRCS
   #
   utils/currencysignloader.cpp
   utils/utils.cpp
-        exchange/CustomExchange.cpp exchange/CustomExchange.h)
+  #
+  exchange/StexExchange.cpp 
+  exchange/StexExchange.h
+  #
+  login/qttraderinform.h 
+  login/qttraderinform.cpp 
+  #
+  exchange/exchange_binance.h
+  exchange/exchange_binance.cpp
+  #
+  exchange/exchange_bittrex.h
+  exchange/exchange_bittrex.cpp)
 
 #-------------------------------------------------------------
 # set UI files

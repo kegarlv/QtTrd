@@ -8,12 +8,12 @@
 #include "exchange.h"
 #include <QJsonArray>
 
-class CustomExchange : public Exchange {
+class StexExchange : public Exchange {
     Q_OBJECT
 public:
 
-    CustomExchange(QByteArray pRestSign, QByteArray pRestKey);
-    ~CustomExchange() override;
+    StexExchange(QByteArray pRestSign, QByteArray pRestKey);
+    ~StexExchange() override;
 
 
     void clearVariables() override;
@@ -49,6 +49,7 @@ private:
     QList<DepthItem> *depthAsks, *depthBids;
     QMap<double,double> lastDepthAsksMap;
     QMap<double,double> lastDepthBidsMap;
+    QList<TradesItem> m_tradesCache;
 
 };
 

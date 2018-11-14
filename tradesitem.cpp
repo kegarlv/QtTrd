@@ -30,11 +30,10 @@
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "tradesitem.h"
-#include "main.h"
 #include "julymath.h"
+#include "main.h"
 
-TradesItem::TradesItem()
-{
+TradesItem::TradesItem() {
     backGray = false;
     displayFullDate = false;
     date = 0;
@@ -45,17 +44,13 @@ TradesItem::TradesItem()
     direction = 0;
 }
 
-void TradesItem::cacheStrings()
-{
+void TradesItem::cacheStrings() {
     QDateTime itemDate = QDateTime::fromTime_t(date);
 
-    if (baseValues_->use24HourTimeFormat)
-    {
+    if (baseValues_->use24HourTimeFormat) {
         timeStr = itemDate.toString(baseValues.timeFormat);
         dateStr = itemDate.toString(baseValues.dateTimeFormat);
-    }
-    else
-    {
+    } else {
         QString mmssTemp = itemDate.toString("mm:ss");
         QString hTemp = itemDate.toString("H");
         qint16 hTempInt = hTemp.toShort();
@@ -75,16 +70,23 @@ void TradesItem::cacheStrings()
         amountStr = JulyMath::textFromDouble(amount, baseValues.decimalsAmountLastTrades);
 
     if (amount > 0.0 && price > 0.0)
-        totalStr = JulyMath::textFromDouble(price * amount, qMin(baseValues.currentPair.currBDecimals,
-                                            baseValues.decimalsTotalLastTrades));
+        totalStr =
+            JulyMath::textFromDouble(price * amount, qMin(baseValues.currentPair.currBDecimals,
+                                                          baseValues.decimalsTotalLastTrades));
 }
 
-bool TradesItem::isValid()
-{
+bool TradesItem::isValid() {
     bool valid = date > 0 && price > 0.0 && amount > 0.0;
 
     if (valid)
         cacheStrings();
 
     return valid;
+}
+
+bool TradesItem::operator==(const TradesItem &other) const {
+    return date == other.date && qFuzzyCompare(amount, other.amount) &&
+           qFuzzyCompare(price, other.price) && qFuzzyCompare(total, other.total) &&
+           symbol == other.symbol && orderType == other.orderType;
+    ;
 }

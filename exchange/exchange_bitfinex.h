@@ -56,8 +56,8 @@ private:
 
     QByteArray lastTradesDateCache;
 
-    quint64 lastTradesDate;
-    quint32 tickerLastDate;
+    qint64 lastTradesDate;
+    qint64 tickerLastDate;
     quint64 lastHistoryId;
 
     QList<DepthItem>* depthAsks;
@@ -75,7 +75,7 @@ private:
     void clearVariables();
     void depthSubmitOrder(QString, QMap<double, double>*, double, double, bool);
     void depthUpdateOrder(QString, double, double, bool);
-    void sendToApi(int reqType, QByteArray method, bool auth = false, bool sendNow = true, QByteArray commands = 0);
+    void sendToApi(int reqType, QByteArray method, bool auth = false, bool sendNow = true, QByteArray commands = nullptr);
 private slots:
     void secondSlot();
 public slots:

@@ -225,7 +225,7 @@ void Exchange_WEX::dataReceivedAuth(QByteArray data, int reqType)
                 {
                     QByteArray tradeData = tradeList.at(n).toLatin1() + "}";
                     TradesItem newItem;
-                    newItem.date = getMidData("timestamp\":", "}", &tradeData).toUInt();
+                    newItem.date = getMidData("timestamp\":", "}", &tradeData).toLongLong();
                     newItem.price = getMidData("\"price\":", ",\"", &tradeData).toDouble();
 
                     if (lastFetchTid < 0 && newItem.date < -lastFetchTid)
