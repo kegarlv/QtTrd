@@ -2,21 +2,20 @@
 // Created by kegar on 9/3/18.
 //
 
-#include "CustomExchange.h"
+#include "StexExchange.h"
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <openssl/ecdsa.h>
 #include <openssl/hmac.h>
 
-void CustomExchange::clearVariables() {
-    qDebug() << "ClearVariables request";
+void StexExchange::clearVariables() {
     Exchange::clearVariables();
 }
 
-CustomExchange::~CustomExchange() {}
+StexExchange::~StexExchange() {}
 
-void CustomExchange::secondSlot() {
+void StexExchange::secondSlot() {
 
     static int sendCounter = 0;
 
@@ -29,7 +28,6 @@ void CustomExchange::secondSlot() {
                       false, true);
 
         break;
-        // TODO
     case 1:
         if (!isReplayPending(202))
             sendToApi(202, "GetInfo", true, true, "");
@@ -41,7 +39,6 @@ void CustomExchange::secondSlot() {
             sendToApi(109, "trades?pair=" + baseValues.currentPair.currRequestPair, false, true);
 
         break;
-    // TODO
     case 3:
         if (!tickerOnly && !isReplayPending(204))
             sendToApi(204, "ActiveOrders", true, true, "");
@@ -80,9 +77,7 @@ void CustomExchange::secondSlot() {
     Exchange::secondSlot();
 }
 
-void CustomExchange::dataReceivedAuth(QByteArray data, int i) {
-    //    qDebug() << "Data receoved auth" << array << i;
-
+void StexExchange::dataReceivedAuth(QByteArray data, int i) {
     if (debugLevel) {
         logThread->writeLog("RCV: " + data);
     }
@@ -116,7 +111,6 @@ void CustomExchange::dataReceivedAuth(QByteArray data, int i) {
 
     } break;
     case 103:
-        qDebug() << "request #103 ticker (graph)";
         {
             QJsonObject rootObj = QJsonDocument::fromJson(data).object();
 
@@ -132,21 +126,9 @@ void CustomExchange::dataReceivedAuth(QByteArray data, int i) {
                                       "High", newTickerHigh);
             IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "Low",
                                       newTickerLow);
-            //                IndicatorEngine::setValue(baseValues.exchangeName,
-            //                baseValues.currentPair.symbol, "Sell",
-            //                                          newTickerHigh);
-            //                IndicatorEngine::setValue(baseValues.exchangeName,
-            //                baseValues.currentPair.symbol, "Buy",
-            //                                          newTickerLow);
-//            IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol,
-//                                      "Volume", newTickerVolume);
-            //                IndicatorEngine::setValue(baseValues.exchangeName,
-            //                baseValues.currentPair.symbol, "Last",
-            //                                          newTickerLast);
         }
         break;
     case 109: {
-        qDebug() << "Request 109 Trades";
         auto list = new QList<TradesItem>();
         QJsonObject root = QJsonDocument::fromJson(data).object();
         QJsonArray arr = root.value("result").toArray();
@@ -170,28 +152,15 @@ void CustomExchange::dataReceivedAuth(QByteArray data, int i) {
                                                          b.toObject().value("timestamp").toString().toLongLong();
                                               }))
                                 ->toVariant();
-        IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "Last",
-                                  lastItem.toMap().value("price").toString().toDouble());
+//        IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "Last",
+//                                  lastItem.toMap().value("price").toString().toDouble());
 
         std::sort(list->begin(), list->end(), [](const TradesItem &i1, const TradesItem &i2) {
             return i1.date < i2.date;
         });
         emit this->addLastTrades(baseValues.currentPair.symbol, list);
-
-//        QList<TradesItem> diff;
-//        std::sort(list->begin(), list->end());
-//        std::sort(m_tradesCache.begin(), m_tradesCache.end());
-//        std::set_difference(list->begin(), list->end(), m_tradesCache.begin(), m_tradesCache.end(), std::back_inserter(diff));
-
-//        m_tradesCache.append(diff);
-////        if(diff.size()) {
-//            emit this->addLastTrades(baseValues.currentPair.symbol, new QList<TradesItem>(diff));
-////        }
-        qDebug() << "Parser" << list->size() << "TradesItem";
     } break;
-        // TODO
     case 111:
-        qDebug() << "Request 111 depth";
         emit depthRequestReceived();
         {
 
@@ -352,7 +321,6 @@ void CustomExchange::dataReceivedAuth(QByteArray data, int i) {
         break;
 
     case 202: {
-        qDebug() << "Requset 202 info";
         QJsonObject root = QJsonDocument::fromJson(data).object();
         QJsonObject funds = root.value(data).toObject().value("funds").toObject();
         // A in baseValues.currentPair
@@ -365,7 +333,6 @@ void CustomExchange::dataReceivedAuth(QByteArray data, int i) {
         emit accUsdBalanceChanged(baseValues.currentPair.symbol, newUsdBalance);
     } break;
     case 204:
-        qDebug() << "Request 204 orders";
         {
             QJsonObject root = QJsonDocument::fromJson(data).object();
             QJsonObject ordersObj = root.value("data").toObject();
@@ -390,18 +357,12 @@ void CustomExchange::dataReceivedAuth(QByteArray data, int i) {
         }
         break;
     case 305:
-        qDebug() << "Request 305 order/cancel";
         break;
     case 306:
-        qDebug() << "request 306 order/buy";
         break;
     case 307:
-        qDebug() << "request 307 order/sell";
         break;
     case 208:
-        // TODO my trades???
-        qDebug() << "History 208";
-        qDebug() << data;
         {
             auto list = new QList<HistoryItem>();
             QJsonObject root = QJsonDocument::fromJson(data).object();
@@ -421,29 +382,26 @@ void CustomExchange::dataReceivedAuth(QByteArray data, int i) {
                 (*list) << item;
             }
             emit this->historyChanged(list);
-            qDebug() << "Parser" << list->size() << "HistoryItem";
         }
         break;
 
     default:
-        qDebug() << "UNKNOWN REQUEST" << i;
         break;
     }
 }
 
-void CustomExchange::reloadDepth() {
-    qDebug() << "reload depth";
+void StexExchange::reloadDepth() {
     Exchange::reloadDepth();
 }
 
-void CustomExchange::clearValues() {
+void StexExchange::clearValues() {
     if (julyHttp)
         julyHttp->clearPendingData();
 
     m_tradesCache.clear();
 }
 
-void CustomExchange::getHistory(bool force) {
+void StexExchange::getHistory(bool force) {
 
     if (tickerOnly)
         return;
@@ -455,8 +413,7 @@ void CustomExchange::getHistory(bool force) {
         sendToApi(208, "TradeHistory", true, true, "");
 }
 
-void CustomExchange::buy(QString symbol, double apiBtcToBuy, double apiPriceToBuy) {
-    qDebug() << "Buy" << symbol << apiBtcToBuy << apiPriceToBuy;
+void StexExchange::buy(QString symbol, double apiBtcToBuy, double apiPriceToBuy) {
     if (tickerOnly)
         return;
 
@@ -482,7 +439,7 @@ void CustomExchange::buy(QString symbol, double apiBtcToBuy, double apiPriceToBu
     sendToApi(306, "Trade", true, true, data);
 }
 
-void CustomExchange::sell(QString symbol, double apiBtcToSell, double apiPriceToSell) {
+void StexExchange::sell(QString symbol, double apiBtcToSell, double apiPriceToSell) {
     if (tickerOnly)
         return;
 
@@ -502,8 +459,7 @@ void CustomExchange::sell(QString symbol, double apiBtcToSell, double apiPriceTo
     sendToApi(307, "Trade", true, true, payload);
 }
 
-void CustomExchange::cancelOrder(QString string, QByteArray order) {
-    qDebug() << "Cancel order" << string << order;
+void StexExchange::cancelOrder(QString string, QByteArray order) {
     if (this->tickerOnly)
         return;
 
@@ -513,9 +469,8 @@ void CustomExchange::cancelOrder(QString string, QByteArray order) {
     sendToApi(305, "cancelOrder", true, true, "order_id:" + order);
 }
 
-CustomExchange::CustomExchange(QByteArray pRestSign, QByteArray pRestKey)
+StexExchange::StexExchange(QByteArray pRestSign, QByteArray pRestKey)
     : Exchange() {
-    qDebug() << "Creating custom exchange";
     orderBookItemIsDedicatedOrder = true;
     clearHistoryOnCurrencyChanged = true;
     isLastTradesTypeSupported = false;
@@ -558,13 +513,9 @@ CustomExchange::CustomExchange(QByteArray pRestSign, QByteArray pRestKey)
             SLOT(sslErrors(const QList<QSslError> &)));
     connect(julyHttp, SIGNAL(dataReceived(QByteArray, int)), this,
             SLOT(dataReceivedAuth(QByteArray, int)));
-
-    //    connect(this, &Exchange::threadFinished, this, &CustomExchange::quitThread,
-    //    Qt::DirectConnection); connect(this, &Exchange::threadFinished, this,
-    //    &CustomExchange::quitThread, Qt::DirectConnection);
 }
 
-void CustomExchange::sslErrors(const QList<QSslError> &errors) {
+void StexExchange::sslErrors(const QList<QSslError> &errors) {
     QStringList errorList;
 
     for (int n = 0; n < errors.count(); n++)
@@ -576,7 +527,7 @@ void CustomExchange::sslErrors(const QList<QSslError> &errors) {
     emit showErrorMessage("SSL Error: " + errorList.join(" "));
 }
 
-void CustomExchange::sendToApi(int reqType, QByteArray method, bool auth, bool sendNow,
+void StexExchange::sendToApi(int reqType, QByteArray method, bool auth, bool sendNow,
                                QByteArray commands) {
     if (julyHttp == 0) {
         julyHttp = new JulyHttp("app.stex.com", "", this, true, true,
@@ -625,7 +576,7 @@ void CustomExchange::sendToApi(int reqType, QByteArray method, bool auth, bool s
     }
 }
 
-QByteArray CustomExchange::ecdsaSha1(QByteArray shaKey, QByteArray &data) {
+QByteArray StexExchange::ecdsaSha1(QByteArray shaKey, QByteArray &data) {
     EC_KEY *eckey = EC_KEY_new_by_curve_name(NID_secp256k1);
     EC_KEY_generate_key(eckey);
     BIGNUM *tempPrivateKey = BN_new();
@@ -643,14 +594,14 @@ QByteArray CustomExchange::ecdsaSha1(QByteArray shaKey, QByteArray &data) {
     return rezult;
 }
 
-bool CustomExchange::isReplayPending(int reqType) {
+bool StexExchange::isReplayPending(int reqType) {
     if (julyHttp == 0)
         return false;
 
     return julyHttp->isReqTypePending(reqType);
 }
 
-void CustomExchange::depthUpdateOrder(QString symbol, double price, double amount, bool isAsk) {
+void StexExchange::depthUpdateOrder(QString symbol, double price, double amount, bool isAsk) {
     if (symbol != baseValues.currentPair.symbol)
         return;
 
@@ -677,7 +628,7 @@ void CustomExchange::depthUpdateOrder(QString symbol, double price, double amoun
     }
 }
 
-void CustomExchange::depthSubmitOrder(QString symbol, QMap<double, double> *currentMap,
+void StexExchange::depthSubmitOrder(QString symbol, QMap<double, double> *currentMap,
                                       double priceDouble, double amount, bool isAsk) {
     if (symbol != baseValues.currentPair.symbol)
         return;

@@ -64,7 +64,7 @@
 #include "exchange/exchange_yobit.h"
 #include "exchange/exchange_binance.h"
 #include "exchange/exchange_bittrex.h"
-#include "exchange/CustomExchange.h"
+#include "exchange/StexExchange.h"
 #include <QSystemTrayIcon>
 #include <QtCore/qmath.h>
 #include "script/addrulegroup.h"
@@ -726,7 +726,7 @@ void QtBitcoinTrader::setupClass()
         break;//Bittrex
 
     case 13:
-        currentExchange = new CustomExchange(baseValues.restSign, baseValues.restKey);
+        currentExchange = new StexExchange(baseValues.restSign, baseValues.restKey);
         break; // Stex
 
     default:
@@ -2063,8 +2063,6 @@ void QtBitcoinTrader::currencyMenuChanged(int val)
 
     fillAllUsdLabels(this, nextCurrencyPair.currBStr);
     fillAllBtcLabels(this, nextCurrencyPair.currAStr);
-
-    // TODO: ?? fillAll Usd/Btc for float
 
     iniSettings->setValue("Profile/Currency", ui.currencyMenuTool->text());
 
