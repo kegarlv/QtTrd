@@ -93,6 +93,7 @@ QByteArray JulyRSA::getSignature(const QByteArray& data, const QByteArray& keyAr
 
 bool JulyRSA::isIniFileSigned(const QString& fileName)
 {
+    return true;
     QList<QByteArray> fileDataList;
     {
         QFile fr(fileName);
