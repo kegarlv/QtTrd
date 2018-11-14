@@ -116,7 +116,7 @@ void CustomExchange::dataReceivedAuth(QByteArray data, int i) {
 
     } break;
     case 103:
-        qDebug() << "request #103 ticker";
+        qDebug() << "request #103 ticker (graph)";
         {
             QJsonObject rootObj = QJsonDocument::fromJson(data).object();
 
@@ -138,8 +138,8 @@ void CustomExchange::dataReceivedAuth(QByteArray data, int i) {
             //                IndicatorEngine::setValue(baseValues.exchangeName,
             //                baseValues.currentPair.symbol, "Buy",
             //                                          newTickerLow);
-            IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol,
-                                      "Volume", newTickerVolume);
+//            IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol,
+//                                      "Volume", newTickerVolume);
             //                IndicatorEngine::setValue(baseValues.exchangeName,
             //                baseValues.currentPair.symbol, "Last",
             //                                          newTickerLast);
@@ -166,18 +166,27 @@ void CustomExchange::dataReceivedAuth(QByteArray data, int i) {
 
         QVariant lastItem = (std::max_element(arr.begin(), arr.end(),
                                               [](const QJsonValue &a, const QJsonValue &b) {
-                                                  return a.toObject().value("timestamp").toInt() <
-                                                         b.toObject().value("timestamp").toInt();
+                                                  return a.toObject().value("timestamp").toString().toLongLong() <
+                                                         b.toObject().value("timestamp").toString().toLongLong();
                                               }))
                                 ->toVariant();
         IndicatorEngine::setValue(baseValues.exchangeName, baseValues.currentPair.symbol, "Last",
                                   lastItem.toMap().value("price").toString().toDouble());
 
-        QList<TradesItem> diff = list->toSet().subtract(m_tradesCache.toSet()).toList();
-        m_tradesCache.append(diff);
-        if(diff.size()) {
-            emit this->addLastTrades(baseValues.currentPair.symbol, new QList<TradesItem>(diff));
-        }
+        std::sort(list->begin(), list->end(), [](const TradesItem &i1, const TradesItem &i2) {
+            return i1.date < i2.date;
+        });
+        emit this->addLastTrades(baseValues.currentPair.symbol, list);
+
+//        QList<TradesItem> diff;
+//        std::sort(list->begin(), list->end());
+//        std::sort(m_tradesCache.begin(), m_tradesCache.end());
+//        std::set_difference(list->begin(), list->end(), m_tradesCache.begin(), m_tradesCache.end(), std::back_inserter(diff));
+
+//        m_tradesCache.append(diff);
+////        if(diff.size()) {
+//            emit this->addLastTrades(baseValues.currentPair.symbol, new QList<TradesItem>(diff));
+////        }
         qDebug() << "Parser" << list->size() << "TradesItem";
     } break;
         // TODO
@@ -392,6 +401,7 @@ void CustomExchange::dataReceivedAuth(QByteArray data, int i) {
     case 208:
         // TODO my trades???
         qDebug() << "History 208";
+        qDebug() << data;
         {
             auto list = new QList<HistoryItem>();
             QJsonObject root = QJsonDocument::fromJson(data).object();
@@ -569,7 +579,7 @@ void CustomExchange::sslErrors(const QList<QSslError> &errors) {
 void CustomExchange::sendToApi(int reqType, QByteArray method, bool auth, bool sendNow,
                                QByteArray commands) {
     if (julyHttp == 0) {
-        julyHttp = new JulyHttp("app.stocks.exchange", "", this, true, true,
+        julyHttp = new JulyHttp("app.stex.com", "", this, true, true,
                                 "application/json; charset=UTF-8");
         connect(julyHttp, SIGNAL(anyDataReceived()), baseValues_->mainWindow_,
                 SLOT(anyDataReceived()));
