@@ -1604,7 +1604,7 @@ void QtBitcoinTrader::clearTimeOutedTrades()
         return;
 
     int lastSliderValue = ui.tableTrades->verticalScrollBar()->value();
-    tradesModel->removeDataOlderThen(TimeSync::getTimeT() - 600);
+    tradesModel->removeDataOlderThen(TimeSync::getTimeT() - 60*60*5);
     ui.tableTrades->verticalScrollBar()->setValue(qMin(lastSliderValue, ui.tableTrades->verticalScrollBar()->maximum()));
 }
 
