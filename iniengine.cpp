@@ -269,6 +269,11 @@ void IniEngine::loadExchange(QString exchangeIniFileName)
         }
         else
             QFile(exchangeCacheFileName).remove();
+    } else {
+        QFile stex(exchangeResourceFileName);
+        stex.copy(exchangeCacheFileName);
+        parseExchange(exchangeCacheFileName);
+        return;
     }
 
     if (julyHttp == 0)
