@@ -560,7 +560,7 @@ void StexExchange::sendToApi(int reqType, QByteArray method, bool auth, bool sen
         if (sendNow)
             julyHttp->sendData(reqType, "POST /api2/" + method, postData, appendHeaders);
         else
-            julyHttp->prepareData(reqType, "POST /ap2i/" + method, postData, appendHeaders);
+            julyHttp->prepareData(reqType, "POST /api2/" + method, postData, appendHeaders);
     } else {
         if (commands.isEmpty()) {
             if (sendNow)
