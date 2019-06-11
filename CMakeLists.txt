@@ -25,9 +25,9 @@ find_package(Qt5 COMPONENTS Core Widgets Network Script Multimedia REQUIRED)
 #-------------------------------------------------------------
 # Find OpenSSL if on windows
 #-------------------------------------------------------------
-if (WIN32)
+# if (WIN32)
   find_package(OpenSSL REQUIRED)
-endif()
+# endif()
 
 #-------------------------------------------------------------
 # Find zlib if on windows
@@ -216,9 +216,10 @@ include_directories(
 )
 
 # OpenSSL
-if (WIN32)
+# if (WIN32)
   include_directories(${OPENSSL_INCLUDE_DIR})
-endif()
+  message(${OPENSSL_INCLUDE_DIR})
+# endif()
 
 # zlib
 if (WIN32)
@@ -247,4 +248,15 @@ if (WIN32)
 else()
   target_link_libraries(QtBitcoinTrader crypto ssl z)
 endif()
+
+IF(APPLE)
+   FIND_LIBRARY(APP_SERVICES_LIBRARY ApplicationServices )
+   FIND_LIBRARY(CF CoreFoundation)
+   MARK_AS_ADVANCED ( CF
+                     APP_SERVICES_LIBRARY)
+   SET(EXTRA_LIBS  ${APP_SERVICES_LIBRARY} ${CF})
+   target_link_libraries(QtBitcoinTrader ${EXTRA_LIBS})
+ENDIF (APPLE)
+
+
 
